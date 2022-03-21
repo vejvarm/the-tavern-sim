@@ -46,7 +46,7 @@ class Brewery:
             self._tier += 1  # upgrade tier
             self._daily_mead_prod = self.__tier_mead_prod[self._tier]  # upgrade mead production
 
-        self._mead += self._daily_mead_prod  # TODO: why here?
+        self._mead += self._daily_mead_prod
 
         return self._daily_mead_prod, br_reward
 

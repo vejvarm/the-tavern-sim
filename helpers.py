@@ -3,11 +3,14 @@ from bokeh.models import Spinner
 
 
 def plot_constructor():
-    p = figure(title="Mead trend", x_axis_label="day", y_axis_label="mead", min_width=800)
-#    p.border_fill_color = 'black'
-#    p.background_fill_color = 'black'
-#    p.outline_line_color = None
-#    p.grid.grid_line_color = None
+    p = figure(title="Mead trend", x_axis_label="day", y_axis_label="mead", min_width=800,
+               width_policy="max", height_policy="fit")  # TODO: aspect_ratio
+    return p
+
+
+def brewery_plot_constructor():
+    p = figure(title="Breweries", x_axis_label="day", y_axis_label="breweries", min_width=800,
+               width_policy="max", height_policy="fit")
     return p
 
 
@@ -63,3 +66,10 @@ def update_output_values(player, **kwargs):
         kwargs["unclaimed_mead"].text = str(player.unclaimed_mead)
     if "wallet_mead" in kwargs.keys():
         kwargs["wallet_mead"].text = str(player.mead_in_wallet)
+
+
+def append_l2(num_brws_list: list, num_brw_now: list):
+    n_tiers = len(num_brws_list)
+    assert n_tiers == len(num_brw_now)
+    for i in range(n_tiers):
+        num_brws_list[i].extend(num_brw_now[i])
