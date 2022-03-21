@@ -36,12 +36,18 @@ def initialize():
                     line_dash='dashed', line_width=3)
     PLOT.add_layout(roi_line)
 
-    # (Re)-initialize data_source
+    # (Re)-initialize ds_mead
     new_data = {"day": [0],
-                "breweries_per_tier": [PLAYER.num_breweries_per_tier],
                 "unclaimed_mead": [0],
                 "mead_in_wallet": [PLAYER.mead_in_wallet]}
-    data_source.data = new_data
+    ds_mead.data = new_data
+
+    # (Re)-initialize ds_breweries
+    new_data = {"day": [0],
+                "t1": [PLAYER.num_breweries],
+                "t2": [0],
+                "t3": [0]}
+    ds_breweries.data = new_data
 
     # update outputs
     update_output_values(PLAYER,
@@ -81,15 +87,16 @@ def callback_run():
     # Update data sources
     new_data = dict()
     new_data["day"] = PLAYER.history["day"][starting_day:]
-    new_data["breweries_per_tier"] = PLAYER.history["breweries_per_tier"][starting_day:]
     new_data["unclaimed_mead"] = PLAYER.history["unclaimed_mead"][starting_day:]
     new_data["mead_in_wallet"] = PLAYER.history["mead_in_wallet"][starting_day:]
-    data_source.stream(new_data)  # stream new data to data_source
+    ds_mead.stream(new_data)  # stream new data to ds_mead
 
-    new_brew_data = dict()
-    new_brew_data["days"] = [new_data["day"] for _ in range(3)]
-    new_brew_data["brew_tiers"] = list(zip(*new_data["breweries_per_tier"]))
-    ds_breweries.stream(new_brew_data)  # stream new data to ds_breweries
+    new_data = {"day": PLAYER.history["day"][starting_day:],
+                "t1": PLAYER.history["breweries_per_tier"]["t1"][starting_day:],
+                "t2": PLAYER.history["breweries_per_tier"]["t2"][starting_day:],
+                "t3": PLAYER.history["breweries_per_tier"]["t3"][starting_day:]}
+    print(new_data)
+    ds_breweries.stream(new_data)  # stream new data to ds_breweries
 
     # update outputs
     update_output_values(PLAYER,
@@ -112,18 +119,25 @@ btn_initialize.on_click(initialize)
 
 # VISUALIZATION
 # create data sources to feed data into
-data_source = ColumnDataSource(data={"day": [0], "unclaimed_mead": [0], "mead_in_wallet": [0]})
-ds_breweries = ColumnDataSource(data={"days": [[0], [0], [0]], "brew_tiers": [[0], [0], [0]]})
-# ds_mead_wallet = ln_mead_wallet.data_source
+ds_mead = ColumnDataSource(data={"day": [0], "unclaimed_mead": [0], "mead_in_wallet": [0]})
+ds_breweries = ColumnDataSource(data={"day": [0], "t1": [0], "t2": [0], "t3": [0]})
+# ds_mead_wallet = ln_mead_wallet.ds_mead
 
 # add line renderers connected to the data sources
-ln_mead_unclmd = PLOT.line(x="day", y="unclaimed_mead", line_color="red", line_width=2, legend_label="unclaimed", source=data_source)
-ln_mead_wallet = PLOT.line(x="day", y="mead_in_wallet", line_color="blue", line_width=2, legend_label="wallet", source=data_source)
+ln_mead_unclmd = PLOT.line(x="day", y="unclaimed_mead", line_color="red", line_width=2, legend_label="unclaimed", source=ds_mead)
+ln_mead_wallet = PLOT.line(x="day", y="mead_in_wallet", line_color="blue", line_width=2, legend_label="wallet", source=ds_mead)
 PLOT.legend.location = "top_left"
 
-xs = [data_source.data["day"] for _ in range(3)]
-ys = list(zip(*PLAYER.history["breweries_per_tier"]))
-ln_breweries = BREWERY_PLOT.multi_line(xs="days", ys="brew_tiers", line_width=2, source=ds_breweries)
+# xs = [ds_mead.data["day"] for _ in range(3)]
+# ys = list(zip(*PLAYER.history["breweries_per_tier"]))
+lns = []
+colors = ["blue", "magenta", "red"]
+for i in range(len(PLAYER.brews_per_tier)):
+    lns.append(BREWERY_PLOT.line(x="day", y=f"t{i+1}", line_color=colors[i], line_width=2,
+                                 legend_label=f"T{i+1}", line_dash=f"{i+2} 4", source=ds_breweries))
+BREWERY_PLOT.legend.location = "top_left"
+
+# ln_breweries = BREWERY_PLOT.multi_line(xs="days", ys="brew_tiers", line_width=2, source=ds_breweries)
 # TODO: multi_line different colors and legend
 
 # SIMULATION

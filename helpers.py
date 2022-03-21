@@ -57,7 +57,7 @@ def update_output_values(player, **kwargs):
     if "day" in kwargs.keys():
         kwargs["day"].text = str(player.day)
     if "breweries" in kwargs.keys():
-        kwargs["breweries"].text = str(tuple(player.num_breweries_per_tier))
+        kwargs["breweries"].text = str(tuple(player.brews_per_tier))
     if "br" in kwargs.keys():
         kwargs["br"].text = f"{player.br} ({player.rank_name})"
     if "claim_tax" in kwargs.keys():

@@ -80,7 +80,7 @@ class Player:
     def __init__(self, num_breweries=0, price_per_brewery=100, br=0, unclaimed_mead=0., mead_in_wallet=0., name=None):
         self.name = str(name) if name is not None else PLAYER_NAMES.pop(random.randint(0, len(PLAYER_NAMES)-1))
         self.num_breweries = 0
-        self.num_breweries_per_tier = [0, 0, 0]
+        self.brews_per_tier = [0, 0, 0]
         self.breweries = {}
         self._day = 0
         self._rank = 0
@@ -93,7 +93,9 @@ class Player:
         self.br = br  # also updates _rank and _rank_name
 
         self._history = {"day": [self.day, ],
-                         "breweries_per_tier": [self.num_breweries_per_tier, ],
+                         "breweries_per_tier": {"t1": [self.brews_per_tier[0], ],
+                                                "t2": [self.brews_per_tier[1], ],
+                                                "t3": [self.brews_per_tier[2], ]},
                          "unclaimed_mead": [self.unclaimed_mead, ],
                          "mead_in_wallet": [self.mead_in_wallet, ]}
 
@@ -169,11 +171,13 @@ class Player:
             num_breweries[brewery.tier] += 1  # populate new brewery tier distribution
         self.unclaimed_mead += daily_mead
         self.br += daily_br
-        self.num_breweries_per_tier = num_breweries
+        self.brews_per_tier = num_breweries
         self._day += 1
 
         self.history["day"].append(self.day)
-        self.history["breweries_per_tier"].append(self.num_breweries_per_tier)
+        self.history["breweries_per_tier"]["t1"].append(self.brews_per_tier[0])
+        self.history["breweries_per_tier"]["t2"].append(self.brews_per_tier[1])
+        self.history["breweries_per_tier"]["t3"].append(self.brews_per_tier[2])
         self.history["unclaimed_mead"].append(self.unclaimed_mead)
         self.history["mead_in_wallet"].append(self.mead_in_wallet)
 
@@ -241,7 +245,7 @@ class Player:
         b_id = f"b{self.num_breweries:02d}"
         self.breweries[b_id] = Brewery(price)
         self.num_breweries += 1  # update overall number of breweries
-        self.num_breweries_per_tier[0] += 1  # update number of TIER 1 breweries
+        self.brews_per_tier[0] += 1  # update number of TIER 1 breweries
         self.br += 10
-        self.history["breweries_per_tier"][-1] = self.num_breweries_per_tier
+        self.history["breweries_per_tier"]["t1"][-1] = self.brews_per_tier[0]
         print(f"Succesfully bought Brewery {b_id} for {price} MEAD.")
